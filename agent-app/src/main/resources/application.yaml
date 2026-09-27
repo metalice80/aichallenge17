@@ -16,7 +16,7 @@ spring:
         enabled: true
         initialized: true
         type: SYNC
-        request-timeout: 20s
+        request-timeout: ${MCP_REQUEST_TIMEOUT:45s}
         toolcallback:
           enabled: true
         stdio:
@@ -26,8 +26,24 @@ spring:
               args:
                 - -jar
                 - ${MCP_SERVER_JAR:mcp-weather-server/build/libs/mcp-weather-server.jar}
+              env:
+                WEATHER_DB_PATH: ${WEATHER_DB_PATH:weather-agent.db}
+                OPEN_METEO_GEOCODING_URL: ${OPEN_METEO_GEOCODING_URL:https://geocoding-api.open-meteo.com/v1/search}
+                OPEN_METEO_FORECAST_URL: ${OPEN_METEO_FORECAST_URL:https://api.open-meteo.com/v1/forecast}
+                WEATHER_SCHEDULER_ENABLED: ${WEATHER_SCHEDULER_ENABLED:true}
+                WEATHER_SCHEDULER_SCAN_DELAY: ${WEATHER_SCHEDULER_SCAN_DELAY:10s}
+                WEATHER_SCHEDULER_BATCH_SIZE: ${WEATHER_SCHEDULER_BATCH_SIZE:10}
+                WEATHER_SCHEDULER_LEASE_DURATION: ${WEATHER_SCHEDULER_LEASE_DURATION:2m}
+                WEATHER_SCHEDULER_RETRY_DELAY: ${WEATHER_SCHEDULER_RETRY_DELAY:1m}
+                WEATHER_STUCK_SUMMARY_TIMEOUT: ${WEATHER_STUCK_SUMMARY_TIMEOUT:5m}
+                WEATHER_MAX_DELIVERY_ATTEMPTS: ${SUMMARY_PUBLISHER_MAX_DELIVERY_ATTEMPTS:3}
 
 app:
   agent:
     model: ${OPENAI_MODEL:gpt-4.1-mini}
     max-message-length: 2000
+  summary-publisher:
+    enabled: ${SUMMARY_PUBLISHER_ENABLED:true}
+    scan-delay: ${SUMMARY_PUBLISHER_SCAN_DELAY:15s}
+    batch-size: ${SUMMARY_PUBLISHER_BATCH_SIZE:5}
+    max-delivery-attempts: ${SUMMARY_PUBLISHER_MAX_DELIVERY_ATTEMPTS:3}

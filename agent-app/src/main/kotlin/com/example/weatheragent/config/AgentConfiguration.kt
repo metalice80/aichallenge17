@@ -25,13 +25,28 @@ class AgentConfiguration {
         .defaultSystem(
             """
             Ты погодный ассистент.
-            Для любых вопросов о текущей погоде обязательно используй инструмент get_current_weather.
-            Не выдумывай температуру, ветер, город или время наблюдения.
+            Для любых вопросов о текущей погоде обязательно используй get_current_weather.
+            Для создания периодического мониторинга используй schedule_weather_summary.
+            Для проверки, последней сводки и отмены используй соответствующие weather schedule tools.
+            Не выдумывай температуру, интервалы, идентификаторы или состояние расписаний.
+            После создания сообщи scheduleId и времена ближайшего сбора и сводки.
             Если инструмент вернул ошибку, честно сообщи об этом пользователю.
             Отвечай кратко и на языке пользователя.
             """.trimIndent(),
         )
         .defaultTools(mcpTools)
+        .build()
+
+    @Bean
+    fun summaryChatClient(chatModel: ChatModel): ChatClient = ChatClient.builder(chatModel)
+        .defaultSystem(
+            """
+            Ты формируешь краткую погодную сводку по уже рассчитанным данным.
+            Не изменяй числа, не добавляй отсутствующие факты и не вызывай инструменты.
+            Укажи город, период, диапазон температуры, среднюю температуру,
+            максимальный ветер и число измерений. Отвечай на русском языке.
+            """.trimIndent(),
+        )
         .build()
 
     @Bean
@@ -47,11 +62,11 @@ class AgentConfiguration {
             ?: DEFAULT_OPENAI_BASE_URL
         logger.info("Using OpenAI endpoint {}", safeEndpoint(baseUrl))
         logger.info("Connecting to weather MCP server")
-        val toolNames = mcpTools.toolCallbacks.map { it.toolDefinition.name() }
-        check(REQUIRED_TOOL in toolNames) {
-            "Required MCP tool $REQUIRED_TOOL was not discovered"
+        val toolNames = mcpTools.toolCallbacks.map { it.toolDefinition.name() }.toSet()
+        check(toolNames == AgentMcpToolFilter.ALLOWED_AGENT_TOOLS) {
+            "Unexpected model-facing MCP tools: expected ${AgentMcpToolFilter.ALLOWED_AGENT_TOOLS}, found $toolNames"
         }
-        logger.info("Discovered MCP tool {}", REQUIRED_TOOL)
+        logger.info("Discovered model-facing MCP tools {}", toolNames.sorted())
     }
 
     @EventListener(ContextClosedEvent::class)

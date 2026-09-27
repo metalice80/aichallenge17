@@ -7,32 +7,59 @@
     <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-<main class="chat-shell">
+<main class="app-shell">
     <header>
         <p class="eyebrow">Spring AI + MCP</p>
         <h1>MCP Weather Agent</h1>
-        <p>Агент получает актуальную погоду через собственный MCP-инструмент и Open-Meteo.</p>
+        <p>Текущая погода и долговременные периодические сводки через Open-Meteo.</p>
     </header>
 
-    <section id="messages" class="messages" aria-label="Сообщения" aria-live="polite">
-        <div class="message agent">
-            <span class="message-author">Агент</span>
-            <p>Спросите, какая сейчас погода в интересующем вас городе.</p>
-        </div>
-    </section>
+    <div class="workspace">
+        <section class="chat-panel" aria-labelledby="chat-title">
+            <h2 id="chat-title">Чат</h2>
+            <section id="messages" class="messages" aria-label="Сообщения" aria-live="polite">
+                <div class="message agent">
+                    <span class="message-author">Агент</span>
+                    <p>Спросите о текущей погоде или попросите собирать погоду и формировать периодические сводки.</p>
+                </div>
+            </section>
 
-    <p id="error" class="error" role="alert" hidden></p>
-    <p id="status" class="status" aria-live="polite" hidden>Получаю ответ…</p>
+            <p id="error" class="error" role="alert" hidden></p>
+            <p id="status" class="status" aria-live="polite" hidden>Получаю ответ…</p>
 
-    <form id="chat-form" class="composer">
-        <label for="message">Сообщение</label>
-        <div class="composer-row">
-            <textarea id="message" name="message" rows="2" maxlength="2000"
-                      placeholder="Какая сейчас погода в Новосибирске и нужна ли тёплая куртка?"
-                      required></textarea>
-            <button id="submit" type="submit">Отправить</button>
-        </div>
-    </form>
+            <form id="chat-form" class="composer">
+                <label for="message">Сообщение</label>
+                <div class="composer-row">
+                    <textarea id="message" name="message" rows="2" maxlength="2000"
+                              placeholder="Собирай погоду в Новосибирске каждые 10 минут, сводку делай каждый час."
+                              required></textarea>
+                    <button id="submit" type="submit">Отправить</button>
+                </div>
+            </form>
+        </section>
+
+        <aside class="monitoring-panel">
+            <section aria-labelledby="schedules-title">
+                <div class="section-heading">
+                    <h2 id="schedules-title">Расписания</h2>
+                    <span id="schedules-state" class="poll-state" aria-live="polite"></span>
+                </div>
+                <div id="schedules" class="card-list">
+                    <p class="empty-state">Расписания загружаются…</p>
+                </div>
+            </section>
+
+            <section aria-labelledby="summaries-title">
+                <div class="section-heading">
+                    <h2 id="summaries-title">Периодические сводки</h2>
+                    <span id="summaries-state" class="poll-state" aria-live="polite"></span>
+                </div>
+                <div id="summaries" class="card-list summaries">
+                    <p class="empty-state">Готовых сводок пока нет.</p>
+                </div>
+            </section>
+        </aside>
+    </div>
 </main>
 <script src="/app.js" defer></script>
 </body>

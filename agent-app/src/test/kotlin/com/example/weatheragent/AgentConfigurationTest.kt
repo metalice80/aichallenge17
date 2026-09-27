@@ -85,6 +85,24 @@ class AgentConfigurationTest {
         verify(mcpTools).toolCallbacks
     }
 
+    @Test
+    fun `summary chat client calls model without MCP callbacks`() {
+        val chatModel = mock<ChatModel>()
+        whenever(chatModel.options).thenReturn(ToolCallingChatOptions.builder().build())
+        whenever(chatModel.call(any<Prompt>())).thenReturn(
+            ChatResponse(listOf(Generation(AssistantMessage("summary")))),
+        )
+
+        val answer = AgentConfiguration()
+            .summaryChatClient(chatModel)
+            .prompt()
+            .user("aggregate")
+            .call()
+            .content()
+
+        assertEquals("summary", answer)
+    }
+
     @Configuration(proxyBeanMethods = false)
     @EnableConfigurationProperties(AgentProperties::class)
     class PropertiesConfiguration

@@ -4,6 +4,21 @@ spring:
   main:
     web-application-type: none
     banner-mode: off
+  datasource:
+    url: jdbc:sqlite:${WEATHER_DB_PATH:weather-agent.db}
+    driver-class-name: org.sqlite.JDBC
+    hikari:
+      maximum-pool-size: 1
+      minimum-idle: 1
+      connection-timeout: 5000
+      connection-init-sql: PRAGMA foreign_keys=ON
+      data-source-properties:
+        busy_timeout: 5000
+        journal_mode: WAL
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
   ai:
     mcp:
       server:
@@ -11,9 +26,9 @@ spring:
         stdio: true
         type: SYNC
         name: weather-mcp-server
-        version: 1.0.0
+        version: 2.0.0
         instructions: >-
-          Provides current weather for a city using Open-Meteo.
+          Provides current weather and durable periodic weather schedules using Open-Meteo.
         capabilities:
           tool: true
           resource: false
@@ -26,3 +41,11 @@ app:
     forecast-url: ${OPEN_METEO_FORECAST_URL:https://api.open-meteo.com/v1/forecast}
     connect-timeout: 5s
     request-timeout: 10s
+  scheduler:
+    enabled: ${WEATHER_SCHEDULER_ENABLED:true}
+    scan-delay: ${WEATHER_SCHEDULER_SCAN_DELAY:10s}
+    batch-size: ${WEATHER_SCHEDULER_BATCH_SIZE:10}
+    lease-duration: ${WEATHER_SCHEDULER_LEASE_DURATION:2m}
+    retry-delay: ${WEATHER_SCHEDULER_RETRY_DELAY:1m}
+    stuck-summary-timeout: ${WEATHER_STUCK_SUMMARY_TIMEOUT:5m}
+    max-delivery-attempts: ${WEATHER_MAX_DELIVERY_ATTEMPTS:3}

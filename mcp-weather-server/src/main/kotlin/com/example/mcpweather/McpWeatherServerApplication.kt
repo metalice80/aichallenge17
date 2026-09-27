@@ -1,6 +1,8 @@
 package com.example.mcpweather
 
 import com.example.mcpweather.config.OpenMeteoProperties
+import com.example.mcpweather.config.SchedulerProperties
+import org.springframework.core.env.Environment
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -11,7 +13,7 @@ import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Component
 
 @SpringBootApplication
-@EnableConfigurationProperties(OpenMeteoProperties::class)
+@EnableConfigurationProperties(OpenMeteoProperties::class, SchedulerProperties::class)
 class McpWeatherServerApplication
 
 fun main(args: Array<String>) {
@@ -19,12 +21,16 @@ fun main(args: Array<String>) {
 }
 
 @Component
-class ServerLifecycleLogger {
+class ServerLifecycleLogger(
+    private val environment: Environment,
+) {
     private val logger = LoggerFactory.getLogger(javaClass)
 
     @EventListener(ApplicationReadyEvent::class)
     fun onReady() {
-        logger.info("Weather MCP server started; registered get_current_weather")
+        val jdbcUrl = environment.getProperty("spring.datasource.url").orEmpty()
+        val safePath = jdbcUrl.removePrefix("jdbc:sqlite:").substringBefore('?')
+        logger.info("Weather MCP server started; SQLite path {}; scheduler tools registered", safePath)
     }
 
     @EventListener(ContextClosedEvent::class)

@@ -9,3 +9,6 @@
 .vscode/
 .DS_Store
 out/
+*.db
+*.db-shm
+*.db-wal

@@ -1,6 +1,7 @@
 package com.example.weatheragent.web
 
 import com.example.weatheragent.agent.AgentUpstreamException
+import com.example.weatheragent.scheduler.WeatherSchedulerMcpException
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -12,9 +13,9 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 class GlobalExceptionHandler {
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    @ExceptionHandler(InvalidChatRequestException::class, HttpMessageNotReadableException::class)
+    @ExceptionHandler(InvalidChatRequestException::class, InvalidSchedulerRequestException::class, HttpMessageNotReadableException::class)
     fun badRequest(): ResponseEntity<ApiError> =
-        ResponseEntity.badRequest().body(ApiError("Некорректное сообщение"))
+        ResponseEntity.badRequest().body(ApiError("Некорректный запрос"))
 
     @ExceptionHandler(AgentUpstreamException::class)
     fun upstreamFailure(exception: AgentUpstreamException): ResponseEntity<ApiError> {
@@ -23,9 +24,16 @@ class GlobalExceptionHandler {
             .body(ApiError("Не удалось получить ответ погодного агента"))
     }
 
+    @ExceptionHandler(WeatherSchedulerMcpException::class)
+    fun schedulerUpstreamFailure(exception: WeatherSchedulerMcpException): ResponseEntity<ApiError> {
+        logger.warn("Weather scheduler MCP failure: {}", exception.cause?.javaClass?.simpleName ?: exception.javaClass.simpleName)
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+            .body(ApiError("Не удалось получить данные планировщика"))
+    }
+
     @ExceptionHandler(Exception::class)
     fun internalFailure(exception: Exception): ResponseEntity<ApiError> {
-        logger.error("Unexpected chat API failure", exception)
+        logger.error("Unexpected API failure", exception)
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
             .body(ApiError("Внутренняя ошибка сервера"))
     }

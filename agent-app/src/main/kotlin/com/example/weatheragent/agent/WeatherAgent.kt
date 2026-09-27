@@ -6,10 +6,12 @@ import com.example.weatheragent.config.AgentProperties
 
 import org.slf4j.LoggerFactory
 import org.springframework.ai.chat.client.ChatClient
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 
 @Service
 class WeatherAgent(
+    @Qualifier("weatherChatClient")
     private val weatherChatClient: ChatClient,
     private val properties: AgentProperties,
 ) {

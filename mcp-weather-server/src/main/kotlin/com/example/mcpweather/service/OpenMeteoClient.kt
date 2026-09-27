@@ -45,7 +45,7 @@ class OpenMeteoClient(
                 "current",
                 "temperature_2m,apparent_temperature,weather_code,wind_speed_10m",
             )
-            .queryParam("timezone", "auto")
+            .queryParam("timezone", "UTC")
             .build()
             .encode()
             .toUri()

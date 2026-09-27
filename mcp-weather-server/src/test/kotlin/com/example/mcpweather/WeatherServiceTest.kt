@@ -33,6 +33,7 @@ class WeatherServiceTest {
                 { assertEquals(14.2, result.windSpeedKmh) },
                 { assertEquals(3, result.weatherCode) },
                 { assertEquals("2026-09-28T12:00", result.observedAt) },
+                { assertEquals("UTC", stub.lastForecastTimezone) },
             )
         }
     }

@@ -27,6 +27,10 @@ class TestWeatherApiStub : AutoCloseable {
     @Volatile
     var responseDelayMillis: Long = 0
 
+    @Volatile
+    var lastForecastTimezone: String? = null
+        private set
+
     init {
         server.executor = executor
         server.createContext("/geocoding") { exchange ->
@@ -35,6 +39,7 @@ class TestWeatherApiStub : AutoCloseable {
             respond(exchange, geocodingStatus, body)
         }
         server.createContext("/forecast") { exchange ->
+            lastForecastTimezone = queryParameters(exchange.requestURI)["timezone"]
             respond(exchange, forecastStatus, forecastBody)
         }
         server.start()
