@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>MCP Weather Agent</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<main class="chat-shell">
+    <header>
+        <p class="eyebrow">Spring AI + MCP</p>
+        <h1>MCP Weather Agent</h1>
+        <p>Агент получает актуальную погоду через собственный MCP-инструмент и Open-Meteo.</p>
+    </header>
+
+    <section id="messages" class="messages" aria-label="Сообщения" aria-live="polite">
+        <div class="message agent">
+            <span class="message-author">Агент</span>
+            <p>Спросите, какая сейчас погода в интересующем вас городе.</p>
+        </div>
+    </section>
+
+    <p id="error" class="error" role="alert" hidden></p>
+    <p id="status" class="status" aria-live="polite" hidden>Получаю ответ…</p>
+
+    <form id="chat-form" class="composer">
+        <label for="message">Сообщение</label>
+        <div class="composer-row">
+            <textarea id="message" name="message" rows="2" maxlength="2000"
+                      placeholder="Какая сейчас погода в Новосибирске и нужна ли тёплая куртка?"
+                      required></textarea>
+            <button id="submit" type="submit">Отправить</button>
+        </div>
+    </form>
+</main>
+<script src="/app.js" defer></script>
+</body>
+</html>

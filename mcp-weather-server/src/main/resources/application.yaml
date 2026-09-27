@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: mcp-weather-server
+  main:
+    web-application-type: none
+    banner-mode: off
+  ai:
+    mcp:
+      server:
+        enabled: true
+        stdio: true
+        type: SYNC
+        name: weather-mcp-server
+        version: 1.0.0
+        instructions: >-
+          Provides current weather for a city using Open-Meteo.
+        capabilities:
+          tool: true
+          resource: false
+          prompt: false
+          completion: false
+
+app:
+  open-meteo:
+    geocoding-url: ${OPEN_METEO_GEOCODING_URL:https://geocoding-api.open-meteo.com/v1/search}
+    forecast-url: ${OPEN_METEO_FORECAST_URL:https://api.open-meteo.com/v1/forecast}
+    connect-timeout: 5s
+    request-timeout: 10s

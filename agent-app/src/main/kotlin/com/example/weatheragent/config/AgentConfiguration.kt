@@ -1,0 +1,71 @@
+package com.example.weatheragent.config
+
+import org.slf4j.LoggerFactory
+import org.springframework.ai.chat.client.ChatClient
+import org.springframework.ai.chat.model.ChatModel
+import org.springframework.ai.mcp.SyncMcpToolCallbackProvider
+import org.springframework.ai.model.openai.autoconfigure.OpenAiChatProperties
+import org.springframework.ai.model.openai.autoconfigure.OpenAiCommonProperties
+import org.springframework.boot.ApplicationRunner
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
+import org.springframework.context.event.ContextClosedEvent
+import org.springframework.context.event.EventListener
+import java.net.URI
+
+@Configuration
+class AgentConfiguration {
+    private val logger = LoggerFactory.getLogger(javaClass)
+
+    @Bean
+    fun weatherChatClient(
+        chatModel: ChatModel,
+        mcpTools: SyncMcpToolCallbackProvider,
+    ): ChatClient = ChatClient.builder(chatModel)
+        .defaultSystem(
+            """
+            Ты погодный ассистент.
+            Для любых вопросов о текущей погоде обязательно используй инструмент get_current_weather.
+            Не выдумывай температуру, ветер, город или время наблюдения.
+            Если инструмент вернул ошибку, честно сообщи об этом пользователю.
+            Отвечай кратко и на языке пользователя.
+            """.trimIndent(),
+        )
+        .defaultTools(mcpTools)
+        .build()
+
+    @Bean
+    fun verifyMcpTool(
+        mcpTools: SyncMcpToolCallbackProvider,
+        properties: AgentProperties,
+        openAiCommonProperties: OpenAiCommonProperties,
+        openAiChatProperties: OpenAiChatProperties,
+    ): ApplicationRunner = ApplicationRunner {
+        logger.info("Using OpenAI model {}", properties.model)
+        val baseUrl = openAiChatProperties.baseUrl?.takeIf(String::isNotBlank)
+            ?: openAiCommonProperties.baseUrl?.takeIf(String::isNotBlank)
+            ?: DEFAULT_OPENAI_BASE_URL
+        logger.info("Using OpenAI endpoint {}", safeEndpoint(baseUrl))
+        logger.info("Connecting to weather MCP server")
+        val toolNames = mcpTools.toolCallbacks.map { it.toolDefinition.name() }
+        check(REQUIRED_TOOL in toolNames) {
+            "Required MCP tool $REQUIRED_TOOL was not discovered"
+        }
+        logger.info("Discovered MCP tool {}", REQUIRED_TOOL)
+    }
+
+    @EventListener(ContextClosedEvent::class)
+    fun onClosed() {
+        logger.info("Weather agent stopping; closing MCP client lifecycle")
+    }
+
+    private fun safeEndpoint(baseUrl: String): String = runCatching {
+        val uri = URI.create(baseUrl)
+        URI(uri.scheme, null, uri.host, uri.port, uri.path, null, null).toString()
+    }.getOrDefault("<invalid endpoint>")
+
+    private companion object {
+        const val DEFAULT_OPENAI_BASE_URL = "https://api.openai.com/v1"
+        const val REQUIRED_TOOL = "get_current_weather"
+    }
+}
