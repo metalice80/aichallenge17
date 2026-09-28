@@ -1,0 +1,8 @@
+<configuration>
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{ISO8601} level=%-5level thread=%thread logger=%logger{36} runId=%X{runId:-} invocationId=%X{invocationId:-} serverName=%X{serverName:-} toolName=%X{toolName:-} toolCallId=%X{toolCallId:-} sequenceNumber=%X{sequenceNumber:-} message="%msg"%n</pattern>
+        </encoder>
+    </appender>
+    <root level="INFO"><appender-ref ref="CONSOLE"/></root>
+</configuration>

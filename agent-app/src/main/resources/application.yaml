@@ -1,0 +1,98 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: day20-agent-app
+  datasource:
+    url: jdbc:sqlite:${ORCHESTRATION_DB_PATH:./data/orchestration.db}
+    driver-class-name: org.sqlite.JDBC
+  sql:
+    init:
+      mode: always
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:missing}
+      timeout: ${OPENAI_TIMEOUT:60s}
+      chat:
+        model: ${OPENAI_MODEL:gpt-5.6-terra}
+        parallel-tool-calls: false
+        extra-body:
+          reasoning_effort: ${OPENAI_REASONING_EFFORT:none}
+    tools:
+      throw-exception-on-error: false
+      resolution:
+        fallback:
+          enabled: false
+      limits:
+        max-total-tool-calls: ${MAX_TOTAL_TOOL_CALLS:12}
+        max-calls-per-tool-default: 5
+        max-calls-per-tool:
+          weather_resolve_location: 2
+          weather_get_forecast: 2
+          guide_search_articles: 2
+          guide_get_article_summary: 5
+          files_save_markdown_report: 1
+        on-limit-exceeded: THROW
+    mcp:
+      client:
+        name: day20-orchestrator
+        version: 1.0.0
+        type: SYNC
+        initialized: true
+        request-timeout: ${MCP_REQUEST_TIMEOUT:30s}
+        stdio:
+          connections:
+            weather:
+              command: ${JAVA_COMMAND:java}
+              args:
+                - -jar
+                - ${WEATHER_SERVER_JAR:mcp-weather-server/build/libs/mcp-weather-server.jar}
+              env:
+                GEOCODING_BASE_URL: ${GEOCODING_BASE_URL:https://geocoding-api.open-meteo.com}
+                FORECAST_BASE_URL: ${FORECAST_BASE_URL:https://api.open-meteo.com}
+            guide:
+              command: ${JAVA_COMMAND:java}
+              args:
+                - -jar
+                - ${GUIDE_SERVER_JAR:mcp-guide-server/build/libs/mcp-guide-server.jar}
+              env:
+                MEDIAWIKI_BASE_URL: ${MEDIAWIKI_BASE_URL:https://ru.wikipedia.org}
+                MEDIAWIKI_PUBLIC_BASE_URL: ${MEDIAWIKI_PUBLIC_BASE_URL:${MEDIAWIKI_BASE_URL:https://ru.wikipedia.org}}
+                MEDIAWIKI_USER_AGENT: ${MEDIAWIKI_USER_AGENT:day20-mcp-orchestration/1.0}
+            files:
+              command: ${JAVA_COMMAND:java}
+              args:
+                - -jar
+                - ${FILES_SERVER_JAR:mcp-files-server/build/libs/mcp-files-server.jar}
+              env:
+                REPORTS_DIR: ${REPORTS_DIR:./reports}
+
+app:
+  agent:
+    model: ${OPENAI_MODEL:gpt-5.6-terra}
+    reasoning-effort: ${OPENAI_REASONING_EFFORT:none}
+    api-key-configured: ${OPENAI_API_KEY:}
+    execution-timeout: ${AGENT_EXECUTION_TIMEOUT:90s}
+  orchestration:
+    executor-threads: ${ORCHESTRATION_EXECUTOR_THREADS:2}
+    queue-capacity: ${ORCHESTRATION_QUEUE_CAPACITY:20}
+    stale-run-timeout: ${STALE_RUN_TIMEOUT:5m}
+    event-poll-interval: ${EVENT_POLL_INTERVAL:500ms}
+    sse-timeout: ${SSE_TIMEOUT:2m}
+    max-total-tool-calls: ${MAX_TOTAL_TOOL_CALLS:12}
+  files:
+    reports-directory: ${REPORTS_DIR:./reports}
+  mcp:
+    weather-jar: ${WEATHER_SERVER_JAR:mcp-weather-server/build/libs/mcp-weather-server.jar}
+    guide-jar: ${GUIDE_SERVER_JAR:mcp-guide-server/build/libs/mcp-guide-server.jar}
+    files-jar: ${FILES_SERVER_JAR:mcp-files-server/build/libs/mcp-files-server.jar}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always

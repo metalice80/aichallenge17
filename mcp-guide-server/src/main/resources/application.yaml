@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: mcp-guide-server
+  main:
+    web-application-type: none
+    banner-mode: off
+  ai:
+    mcp:
+      server:
+        name: guide-server
+        version: 1.0.0
+        type: SYNC
+        stdio: true
+logging:
+  pattern:
+    console: "%d{ISO8601} %-5level [%thread] %logger - %msg%n"
+app:
+  guide:
+    base-url: ${MEDIAWIKI_BASE_URL:https://ru.wikipedia.org}
+    source-base-url: ${MEDIAWIKI_PUBLIC_BASE_URL:${MEDIAWIKI_BASE_URL:https://ru.wikipedia.org}}
+    user-agent: ${MEDIAWIKI_USER_AGENT:day20-mcp-orchestration/1.0}
+    reference-ttl: ${GUIDE_REFERENCE_TTL:10m}
+    reference-cache-size: ${GUIDE_REFERENCE_CACHE_SIZE:1000}
+    max-summary-characters: ${GUIDE_MAX_SUMMARY_CHARACTERS:1500}
+    connect-timeout: ${GUIDE_CONNECT_TIMEOUT:3s}
+    read-timeout: ${GUIDE_READ_TIMEOUT:10s}

@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: mcp-weather-server
+  main:
+    web-application-type: none
+    banner-mode: off
+  ai:
+    mcp:
+      server:
+        name: weather-server
+        version: 1.0.0
+        type: SYNC
+        stdio: true
+logging:
+  pattern:
+    console: "%d{ISO8601} %-5level [%thread] %logger - %msg%n"
+app:
+  weather:
+    geocoding-base-url: ${GEOCODING_BASE_URL:https://geocoding-api.open-meteo.com}
+    forecast-base-url: ${FORECAST_BASE_URL:https://api.open-meteo.com}
+    reference-ttl: ${WEATHER_REFERENCE_TTL:10m}
+    reference-cache-size: ${WEATHER_REFERENCE_CACHE_SIZE:1000}
+    connect-timeout: ${WEATHER_CONNECT_TIMEOUT:3s}
+    read-timeout: ${WEATHER_READ_TIMEOUT:10s}

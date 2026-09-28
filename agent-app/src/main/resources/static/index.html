@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MCP Travel Orchestration</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<main>
+  <header><p class="eyebrow">DAY 20 · MCP</p><h1>Travel orchestration</h1><p>Модель выбирает инструменты, policy защищает порядок и финальную запись.</p></header>
+  <section class="panel form-panel">
+    <label for="message">Запрос</label>
+    <textarea id="message" maxlength="3000">Подготовь план поездки в Казань на ближайшие 3 дня. Учти погоду, выбери три достопримечательности, добавь краткие описания и сохрани отчёт в файл kazan-trip.md.</textarea>
+    <button id="start">Запустить flow</button>
+    <p id="error" class="error" role="alert"></p>
+  </section>
+  <section class="panel run-panel">
+    <div class="run-header"><div><span>Run ID</span><code id="run-id">—</code></div><strong id="status">IDLE</strong></div>
+    <ol id="timeline" class="timeline"></ol>
+    <div class="result"><h2>Результат</h2><pre id="answer">Ожидание запуска.</pre><a id="report" hidden>Открыть Markdown</a></div>
+  </section>
+</main>
+<script src="/app.js" defer></script>
+</body>
+</html>
