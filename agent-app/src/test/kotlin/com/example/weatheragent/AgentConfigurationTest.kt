@@ -4,6 +4,7 @@ import com.example.weatheragent.config.AgentConfiguration
 import com.example.weatheragent.config.AgentProperties
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.assertThrows
 import org.springframework.ai.chat.messages.AssistantMessage
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
@@ -62,6 +63,13 @@ class AgentConfigurationTest {
             .run { context ->
                 assertNotNull(context.startupFailure)
             }
+    }
+
+    @Test
+    fun `rejects unresolved OpenAI API key placeholder`() {
+        assertThrows<IllegalStateException> {
+            AgentConfiguration().validateOpenAiApiKey("\${OPENAI_API_KEY}")
+        }
     }
 
     @Test

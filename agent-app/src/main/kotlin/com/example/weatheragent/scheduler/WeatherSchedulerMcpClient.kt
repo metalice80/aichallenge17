@@ -7,6 +7,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import tools.jackson.databind.ObjectMapper
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 @Component
 class WeatherSchedulerMcpClient(
@@ -16,6 +18,7 @@ class WeatherSchedulerMcpClient(
     private val logger = LoggerFactory.getLogger(javaClass)
     private val client: McpSyncClient
     private val closed = AtomicBoolean(false)
+    private val callLock = ReentrantLock()
 
     init {
         val matching = clients.filter { candidate ->
@@ -60,23 +63,24 @@ class WeatherSchedulerMcpClient(
         return call("list_delivered_weather_summaries", arguments, SummaryListResult::class.java).summaries
     }
 
-    private fun <T> call(name: String, arguments: Map<String, Any>, responseType: Class<T>): T {
-        val result = try {
-            client.callTool(CallToolRequest(name, arguments))
-        } catch (exception: RuntimeException) {
-            throw WeatherSchedulerMcpException("MCP request failed for $name", exception)
+    private fun <T> call(name: String, arguments: Map<String, Any>, responseType: Class<T>): T =
+        callLock.withLock {
+            val result = try {
+                client.callTool(CallToolRequest(name, arguments))
+            } catch (exception: RuntimeException) {
+                throw WeatherSchedulerMcpException("MCP request failed for $name", exception)
+            }
+            if (result.isError == true) {
+                throw WeatherSchedulerMcpException("MCP tool $name returned an error")
+            }
+            val structured = result.structuredContent
+                ?: throw WeatherSchedulerMcpException("MCP tool $name returned no structured content")
+            try {
+                objectMapper.convertValue(structured, responseType)
+            } catch (exception: RuntimeException) {
+                throw WeatherSchedulerMcpException("MCP tool $name returned an invalid response", exception)
+            }
         }
-        if (result.isError == true) {
-            throw WeatherSchedulerMcpException("MCP tool $name returned an error")
-        }
-        val structured = result.structuredContent
-            ?: throw WeatherSchedulerMcpException("MCP tool $name returned no structured content")
-        return try {
-            objectMapper.convertValue(structured, responseType)
-        } catch (exception: RuntimeException) {
-            throw WeatherSchedulerMcpException("MCP tool $name returned an invalid response", exception)
-        }
-    }
 
     @PreDestroy
     fun close() {

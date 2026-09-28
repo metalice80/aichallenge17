@@ -56,6 +56,7 @@ class AgentConfiguration {
         openAiCommonProperties: OpenAiCommonProperties,
         openAiChatProperties: OpenAiChatProperties,
     ): ApplicationRunner = ApplicationRunner {
+        validateOpenAiApiKey(openAiCommonProperties.apiKey)
         logger.info("Using OpenAI model {}", properties.model)
         val baseUrl = openAiChatProperties.baseUrl?.takeIf(String::isNotBlank)
             ?: openAiCommonProperties.baseUrl?.takeIf(String::isNotBlank)
@@ -72,6 +73,13 @@ class AgentConfiguration {
     @EventListener(ContextClosedEvent::class)
     fun onClosed() {
         logger.info("Weather agent stopping; closing MCP client lifecycle")
+    }
+
+    internal fun validateOpenAiApiKey(rawApiKey: String?) {
+        val apiKey = rawApiKey.orEmpty().trim()
+        check(apiKey.isNotEmpty() && !(apiKey.startsWith("\${") && apiKey.endsWith("}"))) {
+            "OPENAI_API_KEY must contain a real API key; unresolved placeholders are not accepted"
+        }
     }
 
     private fun safeEndpoint(baseUrl: String): String = runCatching {

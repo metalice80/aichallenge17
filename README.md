@@ -158,13 +158,14 @@ UI опрашивает schedules каждые 30 секунд и summaries ка
 
 ## Live-запуск
 
-Из корня проекта; MCP jar вручную не запускается:
+Из корня проекта; MCP jar вручную не запускается. Можно использовать короткий root task
+(`mcp-weather-server:bootRun` отключён, чтобы не запускать второй scheduler рядом с дочерним STDIO-процессом):
 
 ```bash
 OPENAI_API_KEY="..." \
 OPENAI_MODEL="gpt-6-luna" \
 WEATHER_DB_PATH="weather-agent.db" \
-./gradlew :agent-app:bootRun
+./gradlew bootRun
 ```
 
 Откройте <http://localhost:8080>. Для live-демонстрации допустимы интервалы 1 и 5 минут. После создания проверьте `/api/schedules`, дождитесь `/api/summaries`, перезапустите приложение с тем же `WEATHER_DB_PATH`, затем отмените schedule через чат.
@@ -172,6 +173,7 @@ WEATHER_DB_PATH="weather-agent.db" \
 ## Troubleshooting
 
 - **SQLite busy/locked** — убедитесь, что одну базу не открыли несколько экземпляров приложения; дождитесь `busy_timeout`, проверьте права на каталог и место на диске.
+- **Сводка остаётся `PENDING`, а `/api/schedules` зависает** — завершите ранее запущенные экземпляры и перезапустите `./gradlew bootRun`. Прямой `:mcp-weather-server:bootRun` отключён: единственный сервер должен запускаться как дочерний STDIO-процесс `agent-app`.
 - **Open-Meteo error/unknown city** — проверьте URL, сеть и имя города. Ошибка сохраняется в schedule, после retry dispatcher продолжит работу.
 - **OpenAI 401/429/5xx** — проверьте ключ, model access, billing и rate limits. Сбор/агрегация продолжаются; summary остаётся `PENDING` до retry или становится `FAILED` после лимита.
 - **Stuck PROCESSING summary** — после `WEATHER_STUCK_SUMMARY_TIMEOUT` claim автоматически восстанавливается в `PENDING`.

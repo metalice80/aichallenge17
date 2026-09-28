@@ -1,4 +1,5 @@
 import org.springframework.boot.gradle.tasks.bundling.BootJar
+import org.springframework.boot.gradle.tasks.run.BootRun
 
 plugins {
     kotlin("jvm")
@@ -30,6 +31,11 @@ dependencies {
 
 tasks.named<BootJar>("bootJar") {
     archiveFileName.set("mcp-weather-server.jar")
+}
+
+tasks.named<BootRun>("bootRun") {
+    enabled = false
+    description = "Disabled: the MCP server must be started by agent-app over STDIO."
 }
 
 tasks.test {
