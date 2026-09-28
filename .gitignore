@@ -1,0 +1,9 @@
+.gradle/
+.kotlin/
+**/build/
+data/
+reports/
+*.db
+*.db-shm
+*.db-wal
+.DS_Store

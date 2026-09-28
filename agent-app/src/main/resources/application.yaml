@@ -1,0 +1,54 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: day19-agent-app
+  main:
+    lazy-initialization: true
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:}
+      base-url: ${OPENAI_BASE_URL:https://api.openai.com/v1}
+      chat:
+        model: ${OPENAI_MODEL:gpt-4o-mini}
+    tools:
+      observations:
+        include-content: false
+    mcp:
+      client:
+        type: SYNC
+        request-timeout: 30s
+        stdio:
+          connections:
+            pipeline-server:
+              command: ${JAVA_COMMAND:java}
+              args:
+                - -jar
+                - ${mcp.server.jar.absolute:${MCP_SERVER_JAR:./mcp-pipeline-server/build/libs/mcp-pipeline-server.jar}}
+              env:
+                PIPELINE_DB_PATH: ${PIPELINE_DB_PATH:./data/pipeline.db}
+                REPORTS_DIR: ${REPORTS_DIR:./reports}
+                GEOCODING_BASE_URL: ${GEOCODING_BASE_URL:https://geocoding-api.open-meteo.com}
+                FORECAST_BASE_URL: ${FORECAST_BASE_URL:https://api.open-meteo.com}
+
+app:
+  agent:
+    model: ${OPENAI_MODEL:gpt-4o-mini}
+    reasoning-effort: ${OPENAI_REASONING_EFFORT:}
+    timeout: 90s
+  pipeline:
+    executor-threads: 2
+    executor-queue-capacity: 20
+    event-poll-interval: 500ms
+    sse-timeout: 2m
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level runId=%X{runId:-} stepId=%X{stepId:-} tool=%X{toolName:-} %logger{36} - %msg%n"

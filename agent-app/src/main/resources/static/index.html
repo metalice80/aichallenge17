@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Weather MCP Pipeline</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<main>
+  <header>
+    <p class="eyebrow">MCP · OpenAI · SQLite</p>
+    <h1>Наблюдаемый погодный pipeline</h1>
+    <p>Агент сам вызывает поиск, детерминированную сводку и безопасное сохранение.</p>
+  </header>
+  <section class="panel">
+    <label for="request">Поручение</label>
+    <textarea id="request" maxlength="2000" rows="5">Найди прогноз для Новосибирска на 5 дней, подготовь краткую сводку и сохрани её в файл novosibirsk.md.</textarea>
+    <div class="actions"><button id="run">Запустить pipeline</button><span id="submit-error" role="alert"></span></div>
+  </section>
+  <section id="result" class="panel hidden" aria-live="polite">
+    <div class="run-head"><div><span class="label">RUN ID</span><strong id="run-id"></strong></div><span id="status" class="status"></span></div>
+    <ol id="timeline" class="timeline"></ol>
+    <p id="file-row" class="hidden"><span class="label">Файл</span> <code id="file"></code></p>
+    <p id="error" class="error hidden"></p>
+    <article id="preview" class="preview hidden"><h2>Предпросмотр отчёта</h2><pre id="report"></pre></article>
+  </section>
+</main>
+<script src="/app.js" defer></script>
+</body>
+</html>

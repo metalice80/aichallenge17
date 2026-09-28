@@ -1,0 +1,36 @@
+spring:
+  application:
+    name: mcp-pipeline-server
+  main:
+    web-application-type: none
+    banner-mode: off
+  ai:
+    mcp:
+      server:
+        name: weather-pipeline-server
+        version: 1.0.0
+        type: SYNC
+        stdio: true
+        annotation-scanner:
+          enabled: true
+  datasource:
+    url: jdbc:sqlite:${pipeline.db.absolute:${PIPELINE_DB_PATH:./data/pipeline.db}}
+    driver-class-name: org.sqlite.JDBC
+  sql:
+    init:
+      mode: never
+
+app:
+  reports:
+    directory: ${reports.absolute:${REPORTS_DIR:./reports}}
+  weather:
+    geocoding-base-url: ${GEOCODING_BASE_URL:https://geocoding-api.open-meteo.com}
+    forecast-base-url: ${FORECAST_BASE_URL:https://api.open-meteo.com}
+    connect-timeout: 3s
+    read-timeout: 10s
+  pipeline:
+    stale-run-timeout: 5m
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX} %-5level runId=%X{runId:-} stepId=%X{stepId:-} tool=%X{toolName:-} %logger{36} - %msg%n"
